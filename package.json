@@ -1,0 +1,18 @@
+{
+  "name": "playerme-core-utils",
+  "version": "0.0.0",
+  "description": "A central place for any utility functions used to help with development",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UnofficialPlayerMe/playerme-core-utils.git"
+  },
+  "author": {
+    "name": "Zazz",
+    "url": "https://github.com/CaptainZazz"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/UnofficialPlayerMe/playerme-core-utils.git/issues"
+  }
+}
