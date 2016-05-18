@@ -15,5 +15,9 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/UnofficialPlayerMe/playerme-core-utils.git/issues"
+  },
+  "dependencies": {
+    "karma": "^0.13.22",
+    "node-notifier": "^4.5.0"
   }
 }
