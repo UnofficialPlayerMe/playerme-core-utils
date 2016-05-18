@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "A central place for any utility functions used to help with development",
   "private": true,
+  "main": "./dist/playerme-core-utils.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/UnofficialPlayerMe/playerme-core-utils.git"
@@ -14,5 +15,9 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/UnofficialPlayerMe/playerme-core-utils.git/issues"
+  },
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "webpack-stream": "^3.2.0"
   }
 }
