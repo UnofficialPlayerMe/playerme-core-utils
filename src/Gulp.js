@@ -1,7 +1,29 @@
-function Gulp(){
-    this._notifier = require('node-notifier');
-    this._karma = require('karma');
-}
+var GulpUtilClass = function(){};
+var gulpUtil = new GulpUtilClass();
+
+/**
+ * Pass in the 'karma' module
+ * @param karmaModule
+ * @returns {boolean} Module added
+ */
+gulpUtil.setupKarma = function(karmaModule){
+    if (karmaModule && karmaModule.Server){
+        this._karma = karmaModule;
+    }
+    return this._karma ? true : false;
+};
+
+/**
+ * Pass in the 'node-notifier' module
+ * @param notifierModule
+ * @returns {boolean} Module added
+ */
+gulpUtil.setupNotifier = function(notifierModule){
+    if (notifierModule && notifierModule.notify){
+        this._notifier = notifierModule;
+    }
+    return this._notifier ? true : false;
+};
 
 /**
  * Show a native notification on Mac, Windows, Linux.
@@ -10,8 +32,11 @@ function Gulp(){
  * @param {String} [title] The title of the notification
  * @param {String} [icon]  The path to an icon to show
  */
-Gulp.prototype.notify = function(message, title, icon){
-    this._notifier.notify({
+gulpUtil.notify = function(message, title, icon){
+    var self = gulpUtil;
+    if (!self._notifier) throw "setupNotifier() must be called before running notify()";
+
+    self._notifier.notify({
         title:   title   || '',
         message: message || '',
         icon:    icon    || '',
@@ -24,18 +49,26 @@ Gulp.prototype.notify = function(message, title, icon){
  * Run Karma tests
  * @param {Function} callback Function to call upon completion
  * @param {Boolean} [singleRun=false] Whether the Karma server should shut down after one run
- * @param {String} [configFile='./karma.conf.js'] The location of the karma config file
- * @returns {karma.Server} The Karma server
+ * @param {String} [configFile='/.karma.conf.js'] The location of the karma config file
+ * @returns {*} The Karma server
  */
-Gulp.prototype.runKarma = function(callback, singleRun, configFile){
-    if (!callback) throw "runKarma wasn't passed a callback";
-    if (!configFile) configFile = './karma.conf.js';
-//  if (!configFile) configFile = __dirname + '/karma.conf.js';
+gulpUtil.runKarma = function(callback, singleRun, configFile){
+    var self = gulpUtil;
+    var path = require('path');
+    var cwd = process.cwd();
 
-    var karmaServer = new this._karma.Server({
+    if (!self._karma) throw "setupKarma() must be called before running runKarma()";
+    if (!self._notifier) throw "setupNotifier() must be called before running runKarma()";
+
+    if (!callback) throw "runKarma wasn't passed a callback";
+    if (!configFile) configFile = path.join(cwd, 'karma.conf.js');
+
+    var karmaServer = new self._karma.Server({
         configFile: configFile,
         singleRun: singleRun
     }, callback);
+
+    var karmaIcon = path.join(cwd, 'node_modules', 'karma/static', 'favicon.ico');
 
     // karmaServer.on('browser_register', function (browser)           { console.log('browser_register', { browser: browser                   }); });
     // karmaServer.on('browser_error',    function (browser, error)    { console.log('browser_error',    { browser: browser,  error: error    }); });
@@ -45,12 +78,9 @@ Gulp.prototype.runKarma = function(callback, singleRun, configFile){
     // karmaServer.on('run_start',        function (browsers)          { console.log('run_start',        { browsers:browsers                  }); });
     // karmaServer.on('run_complete',     function (browsers, results) { console.log('run_complete',     { browsers:browsers, results:results }); });
 
-    var path = require('path');
-    var karmaIcon = path.join(__dirname, 'node_modules', 'karma/static', 'favicon.ico');
-
     if (singleRun) {
         karmaServer.on('run_start', function (browsers) {
-            notify("Running...", "Karma", karmaIcon);
+            self.notify("Running...", "Karma", karmaIcon);
         });
     }
     karmaServer.on('run_complete', function (browsers, results) {
@@ -61,17 +91,17 @@ Gulp.prototype.runKarma = function(callback, singleRun, configFile){
         var disconnected = results.disconnected;
         var exitCode     = results.exitCode;
 
-        if (error)        return notify("Error", "Karma", karmaIcon);
-        if (disconnected) return notify("Disconnected", "Karma", karmaIcon);
-        if (numFailed)    return notify("Failed "+numFailed+"/"+numTotal, "Karma", karmaIcon);
-        if (numSuccess)   return notify("Success "+numSuccess+"/"+numTotal, "Karma", karmaIcon);
-        if (!numTotal)    return notify("No tests ran", "Karma", karmaIcon);
-        return notify("Unhandled ending with exit code "+exitCode, "Karma", karmaIcon);
+        if (error)        return self.notify("Error", "Karma", karmaIcon);
+        if (disconnected) return self.notify("Disconnected", "Karma", karmaIcon);
+        if (numFailed)    return self.notify("Failed "+numFailed+"/"+numTotal, "Karma", karmaIcon);
+        if (numSuccess)   return self.notify("Success "+numSuccess+"/"+numTotal, "Karma", karmaIcon);
+        if (!numTotal)    return self.notify("No tests ran", "Karma", karmaIcon);
+        return self.notify("Unhandled ending with exit code "+exitCode, "Karma", karmaIcon);
     });
 
     karmaServer.start();
     return karmaServer;
 };
 
-// Export an instance
-module.exports = new Gulp();
+// Export the instance
+module.exports = gulpUtil;
